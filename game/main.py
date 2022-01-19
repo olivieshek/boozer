@@ -1,4 +1,5 @@
 import random
+import time
 """
     1. Создать колоду:
         - карта (36шт.):
@@ -24,12 +25,50 @@ import random
         - кончились карты;
         - нечем ответить в споре.
 """
-suits = ('Черви', 'Бубен', 'Пики', 'Крести')
+# TODO: как по колоде узнать, кто победит в конце
+# Разыгрываем раунд
+def new_round(user_hand, computer_hand, table):
+    user_card = user_hand.pop() # Задаем переменную user_card,
+                                # которая хранит в себе последнюю
+                                # карту из user_hand,
+                                # сразу удаляя ее;
+    computer_card = computer_hand.pop() # То же, что и с user_card;
+    # Принтим для игрока
+    print('+ Ход игрока +')
+    print(user_card['Цена'], user_card['Масть']) # "Красивый" принт
+    table.append(user_card)
+    print('\n+ Ход компьютера +')
+    print(computer_card['Цена'], computer_card['Масть']) # "Красивый" принт
+    table.append(computer_card)
+    # input() # Пауза
+    # -----
+    # Сравниваем карты на столе
+    time.sleep(1)
+    print('\n')
+    if user_card['Цена'] > computer_card['Цена']:
+        print('Вы победили!')
+        for card in table:
+            user_hand.insert(0, card)
+            print(card['Цена'], card['Масть'], end='; ') # "Красивый" принт
+    elif computer_card['Цена'] > user_card['Цена']:
+        print('Вы проиграли :(')
+        for card in table:
+            computer_hand.insert(0, card)
+            print(card['Цена'], card['Масть'], end='; ') # "Красивый" принт
+    else:
+        print('Спор.')
+    input('\n\nНажмите ENTER, чтобы сделать ход.')
+    table.clear()
 
-# Создание колоды
-def make_deck(suits):
-    deck = list()
-    # генирируем общую колоду
+# Создаем две колоды игроков
+def deal(deck, user_hand, computer_hand):
+    for card in deck[:len(deck) // 2]:
+        user_hand.append(card)
+    for card in deck[len(deck) // 2:]:
+        computer_hand.append(card)
+
+# Создание общей колоды
+def populate_deck(deck, suits):
     for suit in suits:
         for i in range(6, 15):
             card = dict()
@@ -39,59 +78,25 @@ def make_deck(suits):
             deck.append(card)
     # перемешиваем колоду
     random.shuffle(deck)
-    return deck
 
-# TODO: как по колоде узнать, кто победит в конце
-
-def make_hand(deck):
-    # генерируем две отдельные личные колоды; 
-    # раздаем карты
-    for card in deck:
-        user_hand = deck[:18]
-        computer_hand = deck[18:]
-    return list(user_hand + computer_hand)
-
-def new_table(user_hand, computer_hand):
+def main():
+    deck = list()
     table = list()
-    table.append(user_hand.pop())
-    table.append(computer_hand.pop())
-    return table
-
-# Игра
-def new_game():
-    deck = make_deck(suits)
-    hand = make_hand(deck)
-    user_hand = hand[0]
-    computer_hand = hand[1]
-    table = new_table()
-    # Стол
-    print(f'{table[-2]} - Ваша карта;\n{table[-1]} - карта противника.')
-    # Сравним карты
-        # table[-1] -> Компьютер
-        # table[-2] -> Игрок
-    user_card_price = table[-2]['Цена']
-    computer_card_price = table[-1]['Цена']
-    if user_card_price > computer_card_price:
-        # Игрок выиграл
-        print('Победа!')
-        user_hand += table # т.к. попнули сначала,
-                           # то добавляем вместе с картой игрока;
-        table.clear() # чистим стол, чтобы продолжить игру.
-
-    elif user_card_price < computer_card_price:
-        # Игрок проиграл
-        print('Проигрыш... :(')
-        computer_hand += table # т.к. попнули сначала,
-                               # то добавляем вместе с картой компа;
-        table.clear() # чистим стол, чтобы продолжить игру.
-
+    user_hand = list()
+    computer_hand = list()
+    suits = ('Черви', 'Бубен', 'Пики', 'Крести')
+    populate_deck(deck, suits)
+    # print(deck)
+    deal(deck, user_hand, computer_hand)
+    # print(*user_hand, sep='\n')
+    # print('--------------------------------')
+    # print(*computer_hand, sep='\n')
+    while user_hand and computer_hand:
+        new_round(user_hand, computer_hand, table)
+    print('>>> Результат игры <<<')
+    if user_hand:
+        print('Победил игрок')
     else:
-        # Ничья
-        print('Спор.')
-        # FIXME: Должен вызвать функцию, которая приведет нас в спор
-    return True
+        print('Победил компьютер')
 
-new_game()
-
-# while user_hand and computer_hand:
-#     new_round()
+main()
